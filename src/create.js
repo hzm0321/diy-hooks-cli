@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import figlet from 'figlet';
 import { promisify } from 'util';
 import Listr from 'listr';
+import execa from 'execa';
 
 const access = promisify(fs.access);
 const copy = promisify(ncp);
@@ -24,8 +25,6 @@ async function copyTemplateFile(from, to) {
 export default async function createProject(name) {
   // 拷贝文件地址
   const from = path.resolve(__dirname, '../templates');
-  // 目标文件地址
-  const to = process.cwd();
 
   // 验证目录是否存在
   try {
@@ -35,13 +34,22 @@ export default async function createProject(name) {
     process.exit(1);
   }
 
+  // 创建目标目录
+  const result = await execa('mkdir', [name], {
+    cwd: process.cwd(),
+  });
+
+  if (result.failed) {
+    return Promise.reject(new Error('Failed to initialize git'));
+  }
+
+  // 目标文件地址
+  const to = `${process.cwd()}/${name}`;
+
   // 任务列表
-  const tasks = new Listr([
-    {
-      title: `create ${name} library`,
-      task: () => copyTemplateFile(from, to),
-    },
-  ]);
+  const tasks = new Listr([{
+    title: `create ${name} library`, task: () => copyTemplateFile(from, to),
+  },]);
 
   // 执行任务
   await tasks.run();
