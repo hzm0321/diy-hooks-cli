@@ -38,7 +38,7 @@ async function initGit(cwd) {
 
 export default async function createProject(name, extraOptions) {
   // 拷贝文件地址
-  const from = path.resolve(__dirname, '../templates');
+  const from = path.resolve(__dirname, '../templates/diy-hooks-template');
 
   // 验证目录是否存在
   try {
@@ -76,9 +76,11 @@ export default async function createProject(name, extraOptions) {
   await tasks.run();
 
   // 成功
-  console.log(chalk.blue(figlet.textSync(name, {
+  console.log(chalk.blue(figlet.textSync('diy-hooks-cli', {
     horizontalLayout: 'full'
   })));
+  console.log(chalk.green(`${name} installed successfully`))
+  console.log(`%s ${name} && %s install`, chalk.green('cd'), chalk.green('yarn'));
 
   return true;
 };

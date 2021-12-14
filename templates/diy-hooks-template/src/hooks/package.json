@@ -1,0 +1,44 @@
+{
+  "name": "diy-hooks",
+  "version": "1.0.0",
+  "description": "一个自定义 React Hooks 库。",
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prerollup-build": "rimraf lib && rimraf es",
+    "rollup-dev": "rollup -c -w",
+    "rollup-build": "rollup -c",
+    "prepublish": "npm run rollup-build"
+  },
+  "keywords": [
+    "react",
+    "hooks"
+  ],
+  "files": [
+    "lib",
+    "es",
+    "package.json",
+    "README.md"
+  ],
+  "author": "diy-hooks",
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^16.8.6 || ^17.0"
+  },
+  "devDependencies": {
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-latest": "^6.24.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.56.3",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-dts": "^4.0.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-typescript2": "^0.31.0"
+  },
+  "dependencies": {
+  }
+}
