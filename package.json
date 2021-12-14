@@ -1,14 +1,8 @@
 {
   "name": "diy-hooks-cli",
   "version": "1.0.0",
-  "description": "diy-hooks 构建工具",
-  "main": "src/index.js",
-  "bin": {
-    "diy-hooks-cli": "bin/create"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
+  "description": "diy-hooks 开发工具",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,13 +10,21 @@
     "diy-hooks",
     "react",
     "hooks",
-    "cli"
+    "hooks-cli"
   ],
+  "bin": {
+    "diy-hooks-cli": "bin/create.js"
+  },
   "author": "hzm",
   "license": "ISC",
   "dependencies": {
-    "arg": "^5.0.1",
+    "chalk": "^4.1.2",
+    "clear": "^0.1.0",
+    "commander": "^8.2.0",
     "esm": "^3.2.25",
-    "inquirer": "^8.1.5"
+    "figlet": "^1.5.2",
+    "inquirer": "^8.1.5",
+    "listr": "^0.14.3",
+    "ncp": "^2.0.0"
   }
 }
