@@ -13,7 +13,7 @@
     "hooks-cli"
   ],
   "bin": {
-    "diy-hooks-cli": "bin/create.js"
+    "diy-hooks-cli": "bin/index.js"
   },
   "author": "hzm",
   "license": "ISC",
