@@ -1,26 +1,14 @@
 import fs from 'fs';
 import path from 'path';
-import ncp from 'ncp';
 import chalk from 'chalk';
 import figlet from 'figlet';
 import { promisify } from 'util';
 import Listr from 'listr';
 import execa from 'execa';
 
-const access = promisify(fs.access);
-const copy = promisify(ncp);
+import { copyFile } from "./utils";
 
-/**
- * 复制文件
- * @returns {Promise<*>}
- * @param from
- * @param to
- */
-async function copyTemplateFile(from, to) {
-  return copy(from, to, {
-    clobber: false, // 同名文件不覆盖
-  });
-}
+const access = promisify(fs.access);
 
 /**
  * git 初始化
@@ -54,7 +42,7 @@ export default async function createProject(name, extraOptions) {
   });
 
   if (result.failed) {
-    return Promise.reject(new Error('Failed to initialize git'));
+    return Promise.reject(new Error('Failed to mkdir'));
   }
 
   // 目标文件地址
@@ -64,7 +52,7 @@ export default async function createProject(name, extraOptions) {
   const tasks = new Listr([
     {
       title: `Create ${name} library`,
-      task: () => copyTemplateFile(from, to),
+      task: () => copyFile(from, to),
     },
     {
       title: 'Initialize git',

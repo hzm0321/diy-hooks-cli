@@ -2,6 +2,7 @@ import { program } from 'commander';
 
 import pkg from '../package.json'
 import createProject from "./create";
+import createHook from "./hook";
 
 export function cli(args) {
 
@@ -23,6 +24,16 @@ export function cli(args) {
     .action((name) => {
       createProject(name, extraOptions);
     });
+
+  // 按组插入一个 hook
+  program
+    .command('hook')
+    .description('create a new hook')
+    .argument('<name>', 'the name of the hook')
+    .argument('<group>', 'the group of the hook')
+    .action((name, group) => {
+      createHook(name, group);
+    })
 
   program.parse(args);
 }

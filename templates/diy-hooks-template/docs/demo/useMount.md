@@ -1,7 +1,6 @@
 ---
 title: useMount
 group:
-title: 生命周期
 ---
 
 # useMount
