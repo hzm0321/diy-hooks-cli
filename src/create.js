@@ -22,7 +22,21 @@ async function copyTemplateFile(from, to) {
   });
 }
 
-export default async function createProject(name) {
+/**
+ * git 初始化
+ * @returns {Promise<never>}
+ * @param cwd
+ */
+async function initGit(cwd) {
+  const result = await execa('git', ['init'], {
+    cwd,
+  });
+  if (result.failed) {
+    return Promise.reject(new Error('Failed to initialize git'));
+  }
+}
+
+export default async function createProject(name, extraOptions) {
   // 拷贝文件地址
   const from = path.resolve(__dirname, '../templates');
 
@@ -47,9 +61,16 @@ export default async function createProject(name) {
   const to = `${process.cwd()}/${name}`;
 
   // 任务列表
-  const tasks = new Listr([{
-    title: `create ${name} library`, task: () => copyTemplateFile(from, to),
-  },]);
+  const tasks = new Listr([
+    {
+      title: `Create ${name} library`,
+      task: () => copyTemplateFile(from, to),
+    },
+    {
+      title: 'Initialize git',
+      task: () => initGit(to),
+      enabled: () => extraOptions.git,
+    }]);
 
   // 执行任务
   await tasks.run();
