@@ -5,13 +5,16 @@ import chalk from "chalk";
 import execa from "execa";
 import { copyFile } from "./utils";
 import figlet from "figlet";
+import * as parser from "@babel/parser";
+import traverse from "@babel/traverse";
 
 const access = promisify(fs.access);
 
 export default async function createHook(name, group) {
   try {
-    await createDocsGroup(name, group)
-    await createSrc(name)
+    // await createDocsGroup(name, group)
+    // await createSrc(name);
+    await addHookToIndex(name);
   } catch (e) {
     console.error(e)
   }
@@ -87,4 +90,25 @@ async function createSrc(name) {
     horizontalLayout: 'full'
   })));
   console.log(chalk.green(`${name} create successfully`))
+}
+
+async function addHookToIndex(name) {
+  const from = path.resolve(__dirname, '../templates/diy-hooks-template/src/hooks/src/index.ts');
+  // 读取模板文件内容
+  let code = fs.readFileSync(from, 'utf8');
+
+  const ast = parser.parse(code,{
+    sourceType: "module",
+  });
+  traverse(ast, {
+    enter(path) {
+      console.log(path)
+      if (
+        path.node.type === "Identifier" &&
+        path.node.name === "n"
+      ) {
+        path.node.name = "x";
+      }
+    }
+  });
 }
