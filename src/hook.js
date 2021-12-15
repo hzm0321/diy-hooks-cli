@@ -6,14 +6,16 @@ import execa from "execa";
 import { copyFile } from "./utils";
 import figlet from "figlet";
 import * as parser from "@babel/parser";
+import * as t from "@babel/types";
 import traverse from "@babel/traverse";
+import generate from "@babel/generator";
 
 const access = promisify(fs.access);
 
 export default async function createHook(name, group) {
   try {
-    // await createDocsGroup(name, group)
-    // await createSrc(name);
+    await createDocsGroup(name, group)
+    await createSrc(name);
     await addHookToIndex(name);
   } catch (e) {
     console.error(e)
@@ -84,31 +86,57 @@ async function createSrc(name) {
   const to = `${groupPath}/${name}`;
 
   await copyFile(from, to)
+}
+
+async function addHookToIndex(name) {
+  const from = path.resolve(__dirname, '../templates/diy-hooks-template/src/hooks/src/index.ts');
+  const to = `${process.cwd()}/src/hooks/src/index.ts`
+  // 读取模板文件内容
+  let code = fs.readFileSync(from, 'utf8');
+
+  const ast = parser.parse(code, {
+    sourceType: "module",
+  });
+
+  let isImportSuccess = false;
+  let isExportSuccess = false;
+  traverse(ast, {
+    enter(path) {
+      if (!isImportSuccess) {
+        // import 声明
+        const importDefaultSpecifier = [t.ImportDefaultSpecifier(t.Identifier(name))];
+        const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + name));
+        path.get('body')[0].insertBefore(importDeclaration);
+        isImportSuccess = true;
+      }
+    },
+    ExportNamedDeclaration(path) {
+      if (!isExportSuccess) {
+        const { node } = path;
+        // export 声明
+        const exportSpecifier = [...node.specifiers, t.ExportSpecifier(t.Identifier(name), t.Identifier(name))];
+        const exportNamedDeclaration = t.ExportNamedDeclaration(undefined, exportSpecifier);
+        path.replaceWith(exportNamedDeclaration);
+        isExportSuccess = true;
+      }
+
+    }
+  });
+
+  const output = generate(
+    ast,
+    {
+      /* options */
+    },
+    code
+  );
+
+  // 写入文件
+  fs.writeFileSync(to, output.code);
 
   // 成功
   console.log(chalk.blue(figlet.textSync(name, {
     horizontalLayout: 'full'
   })));
   console.log(chalk.green(`${name} create successfully`))
-}
-
-async function addHookToIndex(name) {
-  const from = path.resolve(__dirname, '../templates/diy-hooks-template/src/hooks/src/index.ts');
-  // 读取模板文件内容
-  let code = fs.readFileSync(from, 'utf8');
-
-  const ast = parser.parse(code,{
-    sourceType: "module",
-  });
-  traverse(ast, {
-    enter(path) {
-      console.log(path)
-      if (
-        path.node.type === "Identifier" &&
-        path.node.name === "n"
-      ) {
-        path.node.name = "x";
-      }
-    }
-  });
 }
