@@ -9,19 +9,45 @@ import * as parser from "@babel/parser";
 import * as t from "@babel/types";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
+import Listr from "listr";
 
 const access = promisify(fs.access);
 
 export default async function createHook(name, group) {
   try {
-    await createDocsGroup(name, group)
-    await createSrc(name);
-    await addHookToIndex(name);
+    const tasks = new Listr([
+      {
+        title: `createDocsGroup`,
+        task: () => createDocsGroup(name, group),
+      },
+      {
+        title: 'createSrc',
+        task: () => createSrc(name),
+      },
+      {
+        title: 'addHookToIndex',
+        task: () => addHookToIndex(name),
+      },
+    ]);
+    // 执行任务
+    await tasks.run();
+
+    // 成功
+    console.log(chalk.blue(figlet.textSync(name, {
+      horizontalLayout: 'full'
+    })));
+    console.log(chalk.green(`${name} create success`))
   } catch (e) {
     console.error(e)
   }
 }
 
+/**
+ * 创建 hook 所在的文档说明目录
+ * @param name
+ * @param group
+ * @returns {Promise<void>}
+ */
 async function createDocsGroup(name, group) {
   // 判断当前目录下 docs 文件夹是否存在
   try {
@@ -72,54 +98,51 @@ async function createSrc(name) {
 }
 
 async function addHookToIndex(name) {
-  const from = path.resolve(__dirname, '../templates/diy-hooks-template/src/hooks/src/index.ts');
-  const to = `${process.cwd()}/src/hooks/src/index.ts`
-  // 读取模板文件内容
-  let code = fs.readFileSync(from, 'utf8');
+  const toHook = `${process.cwd()}/src/hooks/src/index.ts`;
+  const toSrc = `${process.cwd()}/src/index.ts`;
 
-  const ast = parser.parse(code, {
-    sourceType: "module",
-  });
+  const astTraverse = (targetPath) => {
+    // 读取目标
+    let code = fs.readFileSync(targetPath, 'utf8');
+    const ast = parser.parse(code, {
+      sourceType: "module",
+    });
+    let isImportSuccess = false;
+    let isExportSuccess = false;
+    traverse(ast, {
+      enter(path) {
+        if (!isImportSuccess) {
+          // import 声明
+          const importDefaultSpecifier = [t.ImportDefaultSpecifier(t.Identifier(name))];
+          const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + name));
+          path.get('body')[0].insertBefore(importDeclaration);
+          isImportSuccess = true;
+        }
+      },
+      ExportNamedDeclaration(path) {
+        if (!isExportSuccess) {
+          const { node } = path;
+          // export 声明
+          const exportSpecifier = [...node.specifiers, t.ExportSpecifier(t.Identifier(name), t.Identifier(name))];
+          const exportNamedDeclaration = t.ExportNamedDeclaration(undefined, exportSpecifier);
+          path.replaceWith(exportNamedDeclaration);
+          isExportSuccess = true;
+        }
 
-  let isImportSuccess = false;
-  let isExportSuccess = false;
-  traverse(ast, {
-    enter(path) {
-      if (!isImportSuccess) {
-        // import 声明
-        const importDefaultSpecifier = [t.ImportDefaultSpecifier(t.Identifier(name))];
-        const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + name));
-        path.get('body')[0].insertBefore(importDeclaration);
-        isImportSuccess = true;
       }
-    },
-    ExportNamedDeclaration(path) {
-      if (!isExportSuccess) {
-        const { node } = path;
-        // export 声明
-        const exportSpecifier = [...node.specifiers, t.ExportSpecifier(t.Identifier(name), t.Identifier(name))];
-        const exportNamedDeclaration = t.ExportNamedDeclaration(undefined, exportSpecifier);
-        path.replaceWith(exportNamedDeclaration);
-        isExportSuccess = true;
-      }
+    });
 
-    }
-  });
+    const output = generate(
+      ast,
+      {
+        /* options */
+      },
+      code
+    );
+    // 写入文件
+    fs.writeFileSync(targetPath, output.code);
+  }
 
-  const output = generate(
-    ast,
-    {
-      /* options */
-    },
-    code
-  );
-
-  // 写入文件
-  fs.writeFileSync(to, output.code);
-
-  // 成功
-  console.log(chalk.blue(figlet.textSync(name, {
-    horizontalLayout: 'full'
-  })));
-  console.log(chalk.green(`${name} create successfully`))
+  astTraverse(toHook);
+  astTraverse(toSrc);
 }

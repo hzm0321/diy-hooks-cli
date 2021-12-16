@@ -67,8 +67,10 @@ export default async function createProject(name, extraOptions) {
   console.log(chalk.blue(figlet.textSync('diy-hooks-cli', {
     horizontalLayout: 'full'
   })));
-  console.log(chalk.green(`${name} installed successfully`))
-  console.log(`%s ${name} && %s install`, chalk.green('cd'), chalk.green('yarn'));
-
+  console.log(chalk.green(`${name} installed success`))
+  console.log(`%s ${name}`, chalk.green('cd'));
+  console.log(`%s install`,  chalk.green('yarn'));
+  console.log('If you want to create a hook, you can execute the following instructions')
+  console.log(`%s hook useMyFirstHook group`,  chalk.green('diy-hooks-cli'));
   return true;
 };
