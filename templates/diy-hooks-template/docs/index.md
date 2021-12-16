@@ -42,7 +42,7 @@ $ cd your-hooks # 查看生成的前端工程
 
 ### 添加一个自定义 hook
 
-在项目根目录下执行
+在生成的 `hooks 库项目根目录`下执行
 
 ```shell
 $ diy-hooks-cli hook useYourHook group # 在 group 分组下创建 useYourHook
