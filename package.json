@@ -1,6 +1,7 @@
 {
+  "private": false,
   "name": "diy-hooks-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "diy-hooks 开发工具",
   "main": "index.js",
   "scripts": {
@@ -10,8 +11,10 @@
     "diy-hooks",
     "react",
     "hooks",
-    "hooks-cli"
+    "diy-hooks-cli"
   ],
+  "repository": "https://github.com/hzm0321/diy-hooks-cli",
+  "homepage": "https://github.com/hzm0321/diy-hooks-cli",
   "bin": {
     "diy-hooks-cli": "bin/index.js"
   },
