@@ -37,29 +37,12 @@ async function createDocsGroup(name, group) {
   } catch (err) {
     // 分组目录不存在默认创建
     // 创建目标目录
-    const result = await execa('mkdir', [group], {
-      cwd: `${process.cwd()}/docs`,
-    });
-
-    if (result.failed) {
-      console.error('%s Failed to mkdir', chalk.red.bold('ERROR'));
-      process.exit(1);
-      return Promise.reject(new Error('Failed to mkdir'));
-    }
+    fs.mkdirSync(`${process.cwd()}/docs/${group}`)
   }
 
   // 新建文件
   const groupPath = `${process.cwd()}/docs/${group}`;
   const fileName = `${name}.md`;
-  const hookResult = await execa('touch', [fileName], {
-    cwd: groupPath,
-  });
-
-  if (hookResult.failed) {
-    console.error('%s Failed to touch', chalk.red.bold('ERROR'));
-    process.exit(1);
-    return Promise.reject(new Error('Failed to touch'));
-  }
 
   // 读取模板文件内容
   let data = fs.readFileSync(path.resolve(__dirname, '../templates/diy-hooks-template/docs/demo/useMount.md'), 'utf8');
