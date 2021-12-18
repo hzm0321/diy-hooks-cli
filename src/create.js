@@ -5,6 +5,7 @@ import figlet from 'figlet';
 import { promisify } from 'util';
 import Listr from 'listr';
 import execa from 'execa';
+import { projectInstall} from "pkg-install";
 
 import { copyFile } from "./utils";
 
@@ -58,7 +59,16 @@ export default async function createProject(name, extraOptions) {
       title: 'Initialize git',
       task: () => initGit(to),
       enabled: () => extraOptions.git,
-    }]);
+    },
+    {
+      title: 'Install dependencies',
+      task: () => projectInstall({
+        prefer: 'yarn',
+        cwd: to,
+      }),
+      skip: ()=> !extraOptions.pkgInstall ? '默认跳过依赖安装': undefined,
+    },
+    ]);
 
   // 执行任务
   await tasks.run();
@@ -69,7 +79,10 @@ export default async function createProject(name, extraOptions) {
   })));
   console.log(chalk.green(`${name} installed success`))
   console.log(`%s ${name}`, chalk.green('cd'));
-  console.log(`%s install`,  chalk.green('yarn'));
+  if (!extraOptions.pkgInstall) {
+    console.log(`%s install`,  chalk.green('yarn'));
+  }
+  console.log(`%s start`, chalk.green('yarn'));
   console.log('If you want to create a hook, you can execute the following instructions')
   console.log(`%s hook useMyFirstHook group`,  chalk.green('diy-hooks-cli'));
   return true;

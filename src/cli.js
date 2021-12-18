@@ -13,11 +13,15 @@ export function cli(args) {
   // 创建的命令
   let extraOptions = {
     git: false,
+    pkgInstall: false,
   }
   program
     .command('create')
     .option('-g, --git', 'git init', () => {
       extraOptions.git = true;
+    })
+    .option('-i, --install', 'yarn install', () => {
+      extraOptions.pkgInstall = true;
     })
     .description('create a new hooks library project')
     .argument('<name>', 'the name of the hooks library')

@@ -101,7 +101,7 @@ async function addHookToIndex(name) {
   const toHook = `${process.cwd()}/src/hooks/src/index.ts`;
   const toSrc = `${process.cwd()}/src/index.ts`;
 
-  const astTraverse = (targetPath) => {
+  const astTraverse = (targetPath, importPath) => {
     // 读取目标
     let code = fs.readFileSync(targetPath, 'utf8');
     const ast = parser.parse(code, {
@@ -114,7 +114,7 @@ async function addHookToIndex(name) {
         if (!isImportSuccess) {
           // import 声明
           const importDefaultSpecifier = [t.ImportDefaultSpecifier(t.Identifier(name))];
-          const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + name));
+          const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + importPath + name));
           path.get('body')[0].insertBefore(importDeclaration);
           isImportSuccess = true;
         }
@@ -144,5 +144,5 @@ async function addHookToIndex(name) {
   }
 
   astTraverse(toHook);
-  astTraverse(toSrc);
+  astTraverse(toSrc, 'hooks/src/');
 }
