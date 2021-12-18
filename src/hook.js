@@ -13,7 +13,8 @@ import Listr from "listr";
 
 const access = promisify(fs.access);
 
-export default async function createHook(name, group) {
+export default async function createHook(options) {
+  const { name, group } = options;
   try {
     const tasks = new Listr([
       {

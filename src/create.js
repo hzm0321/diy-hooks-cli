@@ -38,13 +38,7 @@ export default async function createProject(name, extraOptions) {
   }
 
   // 创建目标目录
-  const result = await execa('mkdir', [name], {
-    cwd: process.cwd(),
-  });
-
-  if (result.failed) {
-    return Promise.reject(new Error('Failed to mkdir'));
-  }
+  fs.mkdirSync(`${process.cwd()}/${name}`)
 
   // 目标文件地址
   const to = `${process.cwd()}/${name}`;
