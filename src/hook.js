@@ -2,13 +2,13 @@ import { promisify } from "util";
 import fs from "fs";
 import path from 'path';
 import chalk from "chalk";
-import execa from "execa";
 import { copyFile } from "./utils";
 import figlet from "figlet";
 import * as parser from "@babel/parser";
 import * as t from "@babel/types";
 import traverse from "@babel/traverse";
 import generate from "@babel/generator";
+import template from "@babel/template";
 import Listr from "listr";
 
 const access = promisify(fs.access);
@@ -83,15 +83,15 @@ async function createDocsGroup(name, group) {
 async function createSrc(name) {
   // 新建文件
   const groupPath = `${process.cwd()}/src/hooks/src`;
-  const groupResult = await execa('mkdir', [name], {
-    cwd: groupPath,
-  });
-
-  if (groupResult.failed) {
-    console.error('%s Failed to mkdir', chalk.red.bold('ERROR'));
+  try {
+    fs.mkdirSync(`${groupPath}/${name}`);
+  } catch (e) {
+    if (e.code === 'EEXIST') {
+      console.error(`%s ${name} is existed`, chalk.red.bold('ERROR'));
+    }
     process.exit(1);
-    return Promise.reject(new Error('Failed to mkdir'));
   }
+
   const from = path.resolve(__dirname, '../templates/diy-hooks-template/src/hooks/src/useMount');
   const to = `${groupPath}/${name}`;
 
@@ -114,9 +114,10 @@ async function addHookToIndex(name) {
       enter(path) {
         if (!isImportSuccess) {
           // import 声明
-          const importDefaultSpecifier = [t.ImportDefaultSpecifier(t.Identifier(name))];
-          const importDeclaration = t.ImportDeclaration(importDefaultSpecifier, t.StringLiteral('./' + importPath + name));
-          path.get('body')[0].insertBefore(importDeclaration);
+          const temp = template(`
+            import ${name} from '${importPath}${name}';
+          `)
+          path.get('body')[0].insertBefore(temp());
           isImportSuccess = true;
         }
       },
@@ -144,6 +145,6 @@ async function addHookToIndex(name) {
     fs.writeFileSync(targetPath, output.code);
   }
 
-  astTraverse(toHook);
-  astTraverse(toSrc, 'hooks/src/');
+  astTraverse(toHook, './');
+  astTraverse(toSrc, './hooks/src/');
 }
