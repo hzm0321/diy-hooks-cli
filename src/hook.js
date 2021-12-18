@@ -4,11 +4,8 @@ import path from 'path';
 import chalk from "chalk";
 import { copyFile } from "./utils";
 import figlet from "figlet";
-import * as parser from "@babel/parser";
-import * as t from "@babel/types";
-import traverse from "@babel/traverse";
 import generate from "@babel/generator";
-import template from "@babel/template";
+import { parseSync, traverse, template, types as t } from '@babel/core';
 import Listr from "listr";
 
 const access = promisify(fs.access);
@@ -105,7 +102,7 @@ async function addHookToIndex(name) {
   const astTraverse = (targetPath, importPath) => {
     // 读取目标
     let code = fs.readFileSync(targetPath, 'utf8');
-    const ast = parser.parse(code, {
+    const ast = parseSync(code, {
       sourceType: "module",
     });
     let isImportSuccess = false;
